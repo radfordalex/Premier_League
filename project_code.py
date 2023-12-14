@@ -49,7 +49,7 @@ column_rename_mapping = {
     'rank_in_club_top_scorer': 'Rank in Club as Top Scorer'
 }
 
-@st.cache
+@st.cache_resource
 def load_data():
     # Load the dataset from a CSV file.
     df = pd.read_csv('over0goal.csv')
@@ -62,32 +62,8 @@ def load_data():
 # Load your data
 data = load_data()
 
-# Use your data in the app
-st.write(data)
-
-# # This decorator will cache the data so it's only loaded once.
-# @st.cache_data
-# def load_data():
-#     # Load the dataset from a CSV file.
-#     df = pd.read_csv('over0goal.csv')
-#     # Drop the unwanted columns.
-#     df.drop(['Unnamed: 0', 'birthday_GMT'], axis=1, inplace=True)
-#     return df
-
-# # Load your data
-# data = load_data()
-
-# # Use your data in the app
-# st.write(data)
-
-    
 st.title('2020/2021 Premier League Player Statistics')
-st.text('Vizualizations of statistics related to Top Goal Scorers of 2020/2021 Premier League Season')
-#club_select = st.selectbox('Select Premier League Club', club_list)
-#new_df = prem_data[prem_data['Current Club'] == club_select]
-#prem_data['club_select'] = prem_data['Current Club'] == club_select
-#st.dataframe(prem_data)
-#st.dataframe(new_df)
+st.text('Who was the most efficient Goal Scorer of the 2020/2021 Premier League Season?')
 
 selected_names = st.multiselect('Select Premier League Players for Comparison', data['Player Name'].unique())
 select_measure = [
@@ -115,20 +91,38 @@ filtered_data = data[(data['Player Name'].isin(selected_names))]
 tab1, tab2 = st.tabs(['Scatter Plot', 'Bar Chart'])
 
 with tab1:
-    st.dataframe(filtered_data)
     st.sidebar.header('Scatterplot Options')
     y_axis = st.sidebar.selectbox('Pick your y-axis', select_measure)
     
-    scat_w_tooltip = alt.Chart(filtered_data, title= f'Goals versus {y_axis}').mark_circle(size=60).encode(
-    alt.X('Total Goals'),
-    alt.Y(y_axis, title=f'{y_axis}'),
-    tooltip=['Player Name', 'Age', 'Current Club','Nationality', 'Position', 'Total Goals', y_axis], size = 'Total Goals'
-    ).configure_mark(
-        opacity=0.8,
-        color='red',
-        filled=False).interactive()
-    
-    st.altair_chart(scat_w_tooltip, use_container_width=True)
+    if selected_names:  # Check if there are any names selected
+        st.dataframe(filtered_data)
+        
+        # Check if filtered_data is not empty
+        if not filtered_data.empty:
+            # Compute the min and max values with some padding for the X and Y axes
+            padding = 1  # This is an arbitrary padding value you can adjust
+            x_min = filtered_data['Total Goals'].min() - padding
+            x_max = filtered_data['Total Goals'].max() + padding
+            y_min = filtered_data[y_axis].min() - padding
+            y_max = filtered_data[y_axis].max() + padding
+
+            # Create the scatter plot
+            scat_w_tooltip = alt.Chart(filtered_data, title=f'Goals versus {y_axis}').mark_circle(size=60).encode(
+                alt.X('Total Goals', scale=alt.Scale(domain=(x_min, x_max))),
+                alt.Y(y_axis, title=f'{y_axis}', scale=alt.Scale(domain=(y_min, y_max))),
+                tooltip=['Player Name', 'Age', 'Current Club', 'Nationality', 'Position', 'Total Goals', y_axis]
+            ).configure_mark(
+                opacity=0.8,
+                color='red',
+                filled=False
+            ).interactive()
+
+            st.altair_chart(scat_w_tooltip, use_container_width=True)
+        else:
+            st.warning("Please select at least one player to display the scatter plot.")
+    else:
+        st.info("Select players to see the scatter plot.")
+
 
 
 with tab2:
@@ -153,39 +147,3 @@ with tab2:
     )
 
     st.altair_chart(bar_chart, use_container_width=True)
-# with tab2:
-#     st.sidebar.header('Player Statistic to Display on Bar Chart')
-#     bar_stat = st.sidebar.selectbox('Pick your Stat', select_measure)
-#     count = st.sidebar.number_input(f'Top N {bar_stat}', min_value = 1, max_value = 100, value = 20, step = 1)
-#     bar_chart = alt.Chart(data.nlargest(count))
-    
-
-# Create Altair chart for the filtered data
-# scat_w_tooltip = alt.Chart(filtered_data, title = f'goals vs. {y_axis}').mark_circle(size=60).encode(
-#     x='goals_overall',
-#     y='minutes_played_overall',
-#     tooltip=['full_name', 'age', 'Current Club','nationality', 'position', 'goals_overall']
-# ).interactive()
-# Filter data based on the selected club for the Altair chart
-# filtered_data = prem_data[prem_data['Current Club'] == club_select]
-
-# scat_w_tooltip = alt.Chart(filtered_data).mark_circle(size=60).encode(
-#     x='goals_overall',
-#     y='minutes_played_overall',
-#     tooltip=['full_name', 'nationality', 'position', 'age']
-# ).interactive()
-
-# scatter=alt.Chart(prem_data).mark_point().encode(
-#     x= 'club_select',
-#     y='count()'
-# )
-#st.altair_chart(scatter, use_container_width=True)
-
-# scat_w_tooltip = alt.Chart(prem_data).mark_circle(size=60).encode(
-#     x='goals_overall',
-#     y='minutes_played_overall',
-#     color='Current Club',
-#     tooltip=['full_name', 'Current Club', 'nationality', 'position', 'age']
-# ).interactive()
-
-# st.altair_chart(scat_w_tooltip, use_container_width=True)
