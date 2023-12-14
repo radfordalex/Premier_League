@@ -9,5 +9,5 @@ The data for this application was sourced from a CSV file containing detailed pl
 
 # Future Work
 Data Updates - Implement a way to update dataset (such as integrating with external APIs) with new statistics to enrich the dataset by allowing the app to cover more seasons or utilize more real-time data like player injuries, transfers, etc.
-User Customization - Allow users to create custom metrics or combine existing ones for deeper analysis
-Enhanced Interactivity - Introduce more interactive elements such as player comparison sliders, dynamic filtering, and the ability to track changes over time with a time slider for different seasons
+User Customization - Allow users to create custom metrics or combine existing ones for deeper analysis.
+Enhanced Interactivity - Introduce more interactive elements such as player comparison sliders, dynamic filtering, and the ability to track changes over time with a time slider for different seasons.
